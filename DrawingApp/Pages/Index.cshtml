@@ -1,0 +1,44 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+
+<div id="draw">
+
+</div>
+<script src="~/lib/two.js/two.js"></script>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script>
+    var connection = new signalR.HubConnectionBuilder().withUrl("/drawingHub").build();
+
+    connection.start();
+
+    connection.on("receiveCoord", function (x, y) {
+        drawCircle(x, y);
+    });
+</script>
+<script>
+    var el = document.getElementById("draw");
+    var two = new Two({
+        fullscreen: true
+    });
+
+    two.appendTo(el);
+
+    var drawCircle = function (x, y) {
+        var circle = two.makeCircle(x, y, 5);
+        circle.fill = "purple";
+
+        connection.invoke("SendCoord", x, y);
+
+        two.update();
+    }
+
+    $("#draw").click(function (e) {
+        drawCircle(e.pageX, e.pageY);
+    });
+
+</script>
